@@ -1,0 +1,10 @@
+{
+  "name": "trendviz-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Vroni Fuchsberger <vronifuchsberger@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "serve": "^6.4.1"
+  }
+}

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+body { font: 12px Arial;}
+
+path {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+.kinos {
+  stroke: red;
+}
+
+.museen {
+  stroke: green;
+}
+
+.stadion {
+  stroke: purple;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+</style>
+  <body>
+    <!-- load the d3.js library -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+    <script>
+    // Set the dimensions of the canvas / graph
+var margin = {top: 30, right: 20, bottom: 30, left: 50},
+  width = 1500 - margin.left - margin.right,
+  height = 700 - margin.top - margin.bottom;
+
+// Parse the date / time
+var parseDate = d3.time.format('%Y%m').parse;
+
+// Set the ranges
+var x = d3.time.scale().range([0, width]);
+var y = d3.scale.linear().range([height, 0]);
+
+// Define the axes
+var xAxis = d3.svg
+  .axis()
+  .scale(x)
+  .orient('bottom')
+  .ticks(5);
+
+var yAxis = d3.svg
+  .axis()
+  .scale(y)
+  .orient('left')
+  .ticks(5);
+
+// Define the line
+var valueline = d3.svg
+  .line()
+  .interpolate('basis')
+  .defined(d => Boolean(d) && !isNaN(d.WERT))
+  .x(d => x(d.MONAT))
+  .y(d => y(d.WERT));
+
+// Adds the svg canvas
+var svg = d3
+  .select('body')
+  .append('svg')
+  .attr('width', width + margin.left + margin.right)
+  .attr('height', height + margin.top + margin.bottom)
+  .append('g')
+  .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+function loadFile(filename) {
+  return new Promise((resolve, reject) => {
+    d3.csv(filename, function(error, data) {
+      if (error) {
+        reject(error);
+      } else {
+        data.forEach(function(d) {
+          d.MONAT = parseDate(d.MONAT);
+          d.WERT = parseInt(d.WERT);
+        });
+        resolve(data);
+      }
+    });
+  });
+}
+
+(async () => {
+  const kinos = await loadFile('monatszahlen1710kinos.csv');
+  const freizeit = await loadFile('monatszahlen1710freizeit.csv');
+  const zoo = freizeit.filter(d => d.AUSPRAEGUNG === 'Tierpark Hellabrunn');
+  const stadion = freizeit.filter(d => d.AUSPRAEGUNG === 'Olympiaturm');
+  const museen = Object.values(
+    (await loadFile('monatszahlen1710museen.csv')).reduce((acc, cv) => {
+      if (acc[cv.MONAT]) {
+        acc[cv.MONAT].WERT += cv.WERT || 0;
+      } else {
+        acc[cv.MONAT] = cv;
+      }
+      acc[cv.MONAT].AUSPRAEGUNG = 'insgesamt';
+      return acc;
+    }, {})
+  ).sort((a, b) => a.MONAT - b.MONAT);
+
+  // Scale the range of the data
+  x.domain(
+    d3.extent(kinos, function(d) {
+      return d.MONAT;
+    })
+  );
+  y.domain([
+    0,
+    d3.max(kinos, function(d) {
+      return d.WERT;
+    }),
+  ]);
+
+  // Add the valueline path.
+  svg
+    .append('path')
+    .attr('class', 'line kinos')
+    .attr('d', valueline(kinos));
+
+  svg
+    .append('path')
+    .attr('class', 'line museen')
+    .attr('d', valueline(museen));
+
+  svg
+    .append('path')
+    .attr('class', 'line zoo')
+    .attr('d', valueline(zoo));
+
+  svg
+    .append('path')
+    .attr('class', 'line stadion')
+    .attr('d', valueline(stadion));
+
+  // Add the X Axis
+  svg
+    .append('g')
+    .attr('class', 'x axis')
+    .attr('transform', 'translate(0,' + height + ')')
+    .call(xAxis);
+
+  // Add the Y Axis
+  svg
+    .append('g')
+    .attr('class', 'y axis')
+    .call(yAxis);
+})();
+</script>
+  <p>Hello!</p>
+
+  </body>
+</html>
