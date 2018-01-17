@@ -1,164 +1,411 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<style> /* set the CSS */
+<style>
+  /* set the CSS */
 
-body { font: 12px Arial;}
+  html {
+    height: 100%;
+  }
 
-path {
-    stroke: steelblue;
+  body {
+    font-family: 'Barlow', sans-serif;
+    background-color: #B8CAE8;
+    margin-top: 0;
+    margin-left: 0;
+    height: 100%;
+  }
+
+  .container {
+    display: flex;
+    min-height: 100%;
+  }
+
+  .main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: calc(100% - 150px);
+    margin-top: 50px;
+  }
+
+  .sidebar {
+    width: 180px;
+    flex-shrink: 0;
+    background-color: #263E66;
+    text-align: center;
+    color: white;
+  }
+
+  .graphContainer {
+    padding-left: 50px;
+    padding-right: 50px;
+
+  }
+
+  .graph {
+    overflow-x: scroll;
+    max-width: calc(100%-150px);
+    background-color: white;
+    border-radius: 25px;
+  }
+
+  .iconContainer {
+    display: flex;
+    margin-top: 20px;
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-bottom: 20px;
+    min-width: 380px;
+    justify-content: space-around;
+    text-align: center;
+  }
+
+  .iconContainer p {
+    margin: 0;
+    margin-top: 10px;
+  }
+
+  path {
+    stroke: #167557;
     stroke-width: 2;
     fill: none;
-}
+  }
 
-.kinos {
-  stroke: red;
-}
+  .kinos {
+    stroke: #E7805E;
+  }
 
-.museen {
-  stroke: green;
-}
+  .museen {
+    stroke: #F1C65A;
+  }
 
-.stadion {
-  stroke: purple;
-}
+  .stadion {
+    stroke: #1988A4;
+  }
 
-.axis path,
-.axis line {
+  .overlay {
+    fill: transparent;
+  }
+
+  .cinema,
+  .museum,
+  .stadium,
+  .zoo {
+    color: #263E66;
+    font-size: 17px;
+    font-weight: 300;
+  }
+
+  .visitorCount {
+    font-size: 19px;
+  }
+
+  .currentMonth {
+    font-size: 70px;
+    font-weight: 200;
+    margin: 0;
+    margin-top: 15px;
+  }
+
+  .currentYear {
+    font-size: 55px;
+    margin: 0;
+    align-self: center;
+  }
+
+  .monthAdditions {
+    font-weight: 200;
+    margin-top: 50px;
+  }
+
+  .monthAdditions p {
+    margin-bottom: 10px;
+  }
+
+  .monthIcons {
+    margin-top: 60px;
+  }
+
+  .monthIcons p {
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  .season,
+  .temperature,
+  .rain {
+    font-weight: bold;
+    font-size: 20px;
+    margin-top: 0;
+  }
+
+  .axis.y {
+    position: fixed;
+    left: 0;
+  }
+
+  .axis line,
+  .axis path {
     fill: none;
     stroke: grey;
     stroke-width: 1;
     shape-rendering: crispEdges;
-}
-
+  }
 </style>
-  <body>
-    <!-- load the d3.js library -->
-<script src="https://d3js.org/d3.v3.min.js"></script>
-    <script>
+<link href="https://fonts.googleapis.com/css?family=Barlow:200,300,400" rel="stylesheet">
+
+<body>
+
+
+  <!-- load the d3.js library -->
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <div class="container">
+    <div class="sidebar">
+      <div>
+        <div class="currentDate">
+          <p class="currentMonth">MON</p>
+          <p class="currentYear">Jahr</p>
+        </div>
+        <div class="monthAdditions">
+          <p>Jahreszeit
+            <p class="season">&nbsp;</p>
+          </p>
+          <p>Temperatur
+            <p class="temperature">&nbsp;</p>
+          </p>
+          <p>Niederschlag
+            <p class="rain">&nbsp;</p>
+          </p>
+        </div>
+        <div class="monthIcons">
+          <img src="images/tourist.png " alt="Touristen icon" height="100" width="100 ">
+          <p class="numberTourists">1000000</p>
+          <img src="images/people.png " alt="Einwohner icon" height="100 " width="100 ">
+          <p class="numberPeople">1000000</p>
+        </div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="icons">
+        <div class="iconContainer">
+          <div class="cinema">
+            <img src="images/cinema.png " alt="Kino icon " height="100 " width="100 ">
+            <p>Kinos</p>
+            <p class="visitorCount">&nbsp;</p>
+          </div>
+          <div class="museum">
+            <img src="images/museum.png " alt="Muesum icon " height="100 " width="100 ">
+            <p>Museen</p>
+            <p class="visitorCount"> </p>
+          </div>
+          <div class="stadium">
+            <img src="images/olympiastadium.png " alt="Olympiastadium icon " height="100 " width="100 ">
+            <p>Olympiastadium</p>
+            <p class="visitorCount"> </p>
+          </div>
+          <div class="zoo">
+            <img src="images/zoo.png " alt="Zoo icon " height="100 " width="100 ">
+            <p>Tierpark</p>
+            <p class="visitorCount"> </p>
+          </div>
+        </div>
+      </div>
+      <div class="graphContainer">
+        <div class="graph "></div>
+      </div>
+    </div>
+  </div>
+  <script>
     // Set the dimensions of the canvas / graph
-var margin = {top: 30, right: 20, bottom: 30, left: 50},
-  width = 1500 - margin.left - margin.right,
-  height = 700 - margin.top - margin.bottom;
+    var margin = {
+        top: 20,
+        right: 20,
+        bottom: 30,
+        left: 70,
+      },
+      width = 2500 - margin.left - margin.right,
+      height = 700 - margin.top - margin.bottom;
 
-// Parse the date / time
-var parseDate = d3.time.format('%Y%m').parse;
+    // Parse the date / time
+    var parseDate = d3.time.format('%Y%m').parse;
 
-// Set the ranges
-var x = d3.time.scale().range([0, width]);
-var y = d3.scale.linear().range([height, 0]);
+    // Set the ranges
+    var x = d3.time.scale().range([0, width]);
+    var y = d3.scale.linear().range([height, 0]);
 
-// Define the axes
-var xAxis = d3.svg
-  .axis()
-  .scale(x)
-  .orient('bottom')
-  .ticks(5);
+    // Define the axes
+    var xAxis = d3.svg
+      .axis()
+      .scale(x)
+      .orient('bottom')
+      .ticks(16);
 
-var yAxis = d3.svg
-  .axis()
-  .scale(y)
-  .orient('left')
-  .ticks(5);
+    var yAxis = d3.svg
+      .axis()
+      .scale(y)
+      .orient('left')
+      .ticks(5);
 
-// Define the line
-var valueline = d3.svg
-  .line()
-  .interpolate('basis')
-  .defined(d => Boolean(d) && !isNaN(d.WERT))
-  .x(d => x(d.MONAT))
-  .y(d => y(d.WERT));
+    // Define the line
+    var valueline = d3.svg
+      .line()
+      .interpolate('basis')
+      .defined(d => Boolean(d) && !isNaN(d.WERT))
+      .x(d => x(d.MONAT))
+      .y(d => y(d.WERT));
 
-// Adds the svg canvas
-var svg = d3
-  .select('body')
-  .append('svg')
-  .attr('width', width + margin.left + margin.right)
-  .attr('height', height + margin.top + margin.bottom)
-  .append('g')
-  .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    // Adds the svg canvas
+    var svg = d3
+      .select('.graph')
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-function loadFile(filename) {
-  return new Promise((resolve, reject) => {
-    d3.csv(filename, function(error, data) {
-      if (error) {
-        reject(error);
-      } else {
-        data.forEach(function(d) {
-          d.MONAT = parseDate(d.MONAT);
-          d.WERT = parseInt(d.WERT);
+    function loadFile(filename) {
+      return new Promise((resolve, reject) => {
+        d3.csv(filename, function(error, data) {
+          if (error) {
+            reject(error);
+          } else {
+            data.forEach(function(d) {
+              d.MONAT = parseDate(d.MONAT);
+              d.WERT = parseInt(d.WERT);
+            });
+            resolve(data);
+          }
         });
-        resolve(data);
-      }
-    });
-  });
-}
+      });
+    }
 
-(async () => {
-  const kinos = await loadFile('monatszahlen1710kinos.csv');
-  const freizeit = await loadFile('monatszahlen1710freizeit.csv');
-  const zoo = freizeit.filter(d => d.AUSPRAEGUNG === 'Tierpark Hellabrunn');
-  const stadion = freizeit.filter(d => d.AUSPRAEGUNG === 'Olympiaturm');
-  const museen = Object.values(
-    (await loadFile('monatszahlen1710museen.csv')).reduce((acc, cv) => {
-      if (acc[cv.MONAT]) {
-        acc[cv.MONAT].WERT += cv.WERT || 0;
-      } else {
-        acc[cv.MONAT] = cv;
-      }
-      acc[cv.MONAT].AUSPRAEGUNG = 'insgesamt';
-      return acc;
-    }, {})
-  ).sort((a, b) => a.MONAT - b.MONAT);
+    function loadWeather() {
+      return new Promise((resolve, reject) => {
+        d3.csv('weather.txt', function(error, data) {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(data);
+          }
+        });
+      });
+    }
 
-  // Scale the range of the data
-  x.domain(
-    d3.extent(kinos, function(d) {
-      return d.MONAT;
-    })
-  );
-  y.domain([
-    0,
-    d3.max(kinos, function(d) {
-      return d.WERT;
-    }),
-  ]);
+    (async () => {
+      const kinos = await loadFile('monatszahlen1710kinos.csv');
+      const freizeit = await loadFile('monatszahlen1710freizeit.csv');
+      const zoo = freizeit.filter(d => d.AUSPRAEGUNG === 'Tierpark Hellabrunn');
+      const stadion = freizeit.filter(d => d.AUSPRAEGUNG === 'Olympiastadion');
+      const museen = Object.values(
+        (await loadFile('monatszahlen1710museen.csv')).reduce((acc, cv) => {
+          if (acc[cv.MONAT]) {
+            acc[cv.MONAT].WERT += cv.WERT || 0;
+          } else {
+            acc[cv.MONAT] = cv;
+          }
+          acc[cv.MONAT].AUSPRAEGUNG = 'insgesamt';
+          return acc;
+        }, {})
+      ).sort((a, b) => a.MONAT - b.MONAT);
 
-  // Add the valueline path.
-  svg
-    .append('path')
-    .attr('class', 'line kinos')
-    .attr('d', valueline(kinos));
+      const wetter = await loadWeather();
 
-  svg
-    .append('path')
-    .attr('class', 'line museen')
-    .attr('d', valueline(museen));
+      const tourismus = await loadFile('monatszahlen1710tourismus.csv');
+      const touristen = tourismus.filter(d => d.AUSPRAEGUNG === 'insgesamt' && d.ZAHL === 'Gäste');
+      const einwohner = await loadFile('monatszahlen1710bevoelkerung.csv');
 
-  svg
-    .append('path')
-    .attr('class', 'line zoo')
-    .attr('d', valueline(zoo));
+      var xDomain = d3.extent(zoo, function(d) {
+        return d.MONAT;
+      });
 
-  svg
-    .append('path')
-    .attr('class', 'line stadion')
-    .attr('d', valueline(stadion));
+      zoo.reverse();
+      freizeit.reverse();
+      kinos.reverse();
+      stadion.reverse();
+      museen.reverse();
 
-  // Add the X Axis
-  svg
-    .append('g')
-    .attr('class', 'x axis')
-    .attr('transform', 'translate(0,' + height + ')')
-    .call(xAxis);
+      // Scale the range of the data
+      x.domain(
+        [new Date('2000-01-01'), new Date('2016-12-31')]
+      );
+      y.domain([
+        0,
+        d3.max(kinos, function(d) {
+          return d.WERT;
+        }),
+      ]);
 
-  // Add the Y Axis
-  svg
-    .append('g')
-    .attr('class', 'y axis')
-    .call(yAxis);
-})();
-</script>
-  <p>Hello!</p>
+      svg.append("rect")
+        .attr("class", "overlay")
+        .attr("width", width)
+        .attr("height", height)
+        .on('mousemove', () => {
+          const coordinates = d3.mouse(d3.event.currentTarget);
+          const index = Math.floor((coordinates[0] / width) * 17 * 12);
+          if (index >= 0 && zoo.length > index) {
+            const months = ["JAN", "FEB", "MAR", "APR", "MAI", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEZ"];
+            document.querySelector('.currentMonth').innerHTML = months[zoo[index].MONAT.getMonth()];
+            document.querySelector('.currentYear').innerHTML = zoo[index].JAHR;
+            document.querySelector('.temperature').innerHTML = wetter[index].MO_TX + " °C";
+            document.querySelector('.rain').innerHTML = wetter[index].MO_RR + " mm";
+            document.querySelector('.cinema .visitorCount').innerHTML = kinos[index].WERT;
+            document.querySelector('.museum .visitorCount').innerHTML = museen[index].WERT;
+            document.querySelector('.stadium .visitorCount').innerHTML = stadion[index].WERT;
+            document.querySelector('.zoo .visitorCount').innerHTML = zoo[index].WERT;
+            if (zoo[index].MONAT.getMonth() === 0 || zoo[index].MONAT.getMonth() === 1 || zoo[index].MONAT.getMonth() === 11) {
+              document.querySelector('.season').innerHTML = "Winter";
+            } else if (zoo[index].MONAT.getMonth() >= 2 && zoo[index].MONAT.getMonth() <= 4) {
+              document.querySelector('.season').innerHTML = "Frühling";
+            } else if (zoo[index].MONAT.getMonth() >= 5 && zoo[index].MONAT.getMonth() <= 7) {
+              document.querySelector('.season').innerHTML = "Sommer";
+            } else {
+              document.querySelector('.season').innerHTML = "Herbst";
+            }
+            document.querySelector('.numberTourists').innerHTML = touristen[index].WERT;
+            document.querySelector('.numberPeople').innerHTML = einwohner[index].WERT;
 
-  </body>
+          }
+        });
+
+      // Add the valueline path.
+      svg
+        .append('path')
+        .attr('class', 'line kinos')
+        .attr('d', valueline(kinos));;
+
+      svg
+        .append('path')
+        .attr('class', 'line museen')
+        .attr('d', valueline(museen));
+
+      svg
+        .append('path')
+        .attr('class', 'line zoo')
+        .attr('d', valueline(zoo));
+
+      svg
+        .append('path')
+        .attr('class', 'line stadion')
+        .attr('d', valueline(stadion));
+
+      // Add the X Axis
+      svg
+        .append('g')
+        .attr('class', 'x axis')
+        .attr('transform', 'translate(0,' + height + ')')
+        .call(xAxis);
+
+      // Add the Y Axis
+      svg
+        .append('g')
+        .attr('class', 'y axis')
+        .call(yAxis);
+
+
+    })();
+  </script>
+
+
+</body>
+
 </html>
