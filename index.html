@@ -184,10 +184,10 @@
         <div class="monthIcons">
           <p>Touristen</p>
           <img src="images/tourist.png " alt="Touristen icon" height="100" width="100 ">
-          <p class="numberTourists">1000000</p>
+          <p class="numberTourists">no data</p>
           <p>Einwohner</p>
           <img src="images/people.png " alt="Einwohner icon" height="100 " width="100 ">
-          <p class="numberPeople">1000000</p>
+          <p class="numberPeople">no data</p>
         </div>
       </div>
     </div>
@@ -329,6 +329,8 @@
       kinos.reverse();
       stadion.reverse();
       museen.reverse();
+      touristen.reverse();
+      einwohner.reverse();
 
       // Scale the range of the data
       x.domain(
@@ -367,13 +369,11 @@
             } else {
               document.querySelector('.season').innerHTML = "Herbst";
             }
-
+            document.querySelector('.numberPeople').innerHTML = einwohner[index].WERT;
             if (index < 73) {
               document.querySelector('.numberTourists').innerHTML = "no data";
-              document.querySelector('.numberPeople').innerHTML = "no data";
             } else {
               document.querySelector('.numberTourists').innerHTML = touristen[index - 72].WERT;
-              document.querySelector('.numberPeople').innerHTML = einwohner[index - 72].WERT;
             }
 
           }
